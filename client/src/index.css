@@ -14,11 +14,11 @@ body {
 }
 
 .gradient-bg-welcome {
-  background-color:hsla(129,0%,0%,1);
-  background-image:
-  radial-gradient(at 1% 99%, hsla(288,100%,25%,0.53) 0px, transparent 50%),
-  radial-gradient(at 51% 0%, hsla(239,97%,55%,0.19) 0px, transparent 50%),
-  radial-gradient(at 98% 3%, hsla(319,100%,50%,0.36) 0px, transparent 50%);
+  background-color:#0f0e13;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
 }
 
 .gradient-bg-services {

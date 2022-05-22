@@ -10,6 +10,17 @@ declare global {
     }
 }
 
+interface TransactionCardInterface {
+    key?: number,
+    id?: number;
+    url?: string;
+    message?: string;
+    timestamp?: string;
+    addressFrom?: string;
+    amount?: string;
+    addressTo?: string;
+}
+
 interface fromDataInterface {
     addressTo: string,
     amount: string,
@@ -26,6 +37,7 @@ export const TransactionContext = createContext<{
     sendTransaction: () => void,
     setIsLoading: Setter<boolean>,
     isLoading: Accessor<boolean>,
+    transactions: Accessor<TransactionCardInterface[]>
 }>({
     connectWallet: null,
     currentAccount: null,
@@ -35,6 +47,7 @@ export const TransactionContext = createContext<{
     sendTransaction: null,
     setIsLoading: null,
     isLoading: null,
+    transactions: null,
 });
 
 const { ethereum } = window;
@@ -51,10 +64,33 @@ export function TransactionProvider(props: { children: JSX.Element }) {
     const [currentAccount, setCurrentAccount] = createSignal<string>("");
     const [formData, setFormData] = createSignal<fromDataInterface>();
     const [isLoading, setIsLoading] = createSignal<boolean>(false);
+    const [transactions, setTransactions] = createSignal<TransactionCardInterface[]>();
 
     const handleChange = (e: Event, name: string) => {
         const dom_object = e.target as HTMLInputElement;
         setFormData((prevstate: fromDataInterface) => ({ ...prevstate, [name]: dom_object.value }))
+    }
+
+    const getAllTransactions = async () => {
+        try {
+            if (!ethereum) return alert("Install Metamask!");
+            const transactionContract = getEtheriumContract();
+            const availableTransactions = await transactionContract.getAllTransactions();
+
+            const structuredTransactions = availableTransactions.map((transaction) => ({
+                addressTo: transaction.receiver,
+                addressFrom: transaction.sender,
+                timestamp: new Date(transaction.timestamp.toNumber() * 1000).toLocaleString(),
+                message: transaction.message,
+                keyword: transaction.keyword,
+                amount: parseInt(transaction.amount._hex) / (10**18),
+            }))
+
+            setTransactions(structuredTransactions);
+            console.log(structuredTransactions)
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const checkIfWalletIsConnected = async () => {
@@ -62,6 +98,7 @@ export function TransactionProvider(props: { children: JSX.Element }) {
         const accounts = await ethereum.request<string[]>({ method: 'eth_accounts' });
         if (accounts.length) {
             setCurrentAccount(accounts[0]);
+            getAllTransactions();
         } else {
             console.log("no accounts found");
         }
@@ -74,6 +111,7 @@ export function TransactionProvider(props: { children: JSX.Element }) {
 
             if (accounts.length) {
                 setCurrentAccount(accounts[0]);
+                getAllTransactions();
 
             } else {
                 console.log("no accounts found");
@@ -129,6 +167,7 @@ export function TransactionProvider(props: { children: JSX.Element }) {
             sendTransaction,
             setIsLoading,
             isLoading,
+            transactions,
         }}>
             {props.children}
         </TransactionContext.Provider>
